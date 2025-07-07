@@ -2,6 +2,13 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { Target, Users, Clock, Trophy, Zap } from 'lucide-react'
 
+// Current fundraising status - update these when new donations come in
+const CURRENT_FUNDRAISING_DATA = {
+  totalRaised: 126, // Update this manually when you see new donations
+  contributorCount: 1, // Update this manually when you see new contributors
+  lastUpdated: '2025-07-07' // Keep track of when this was last updated
+}
+
 // Juicebox API hook - trying multiple approaches to get live data
 function useJuiceboxProject(projectId: number) {
   const [data, setData] = useState({
@@ -16,10 +23,12 @@ function useJuiceboxProject(projectId: number) {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }))
         
-        // Try to get the Marina Pickleball project data
+        // Try to get the Marina Pickleball project data from multiple sources
         let projectData = null
+        let totalVolume = 0
+        let totalContributors = 0
         
-        // Try the v4 format first (newer projects)
+        // Approach 1: Try Juicebox V4 subgraph (Ethereum mainnet)
         try {
           const response = await fetch('https://api.studio.thegraph.com/query/30654/mainnet-dev/version/latest', {
             method: 'POST',
@@ -47,62 +56,48 @@ function useJuiceboxProject(projectId: number) {
           
           if (response.ok) {
             const result = await response.json()
-            console.log('API Response:', result)
+            console.log('Mainnet API Response:', result)
             
             if (result.data?.project) {
               projectData = result.data.project
-              console.log('Found project data:', projectData)
+              console.log('Found mainnet project data:', projectData)
+              
+              const volumeETH = parseFloat(projectData.volume || '0') / 1e18
+              const volumeUSD = parseFloat(projectData.volumeUSD || '0') / 1e18
+              totalVolume += volumeUSD > 0 ? volumeUSD : volumeETH * 3500
+              totalContributors += projectData.contributorsCount || projectData.paymentsCount || 0
             }
           }
         } catch (e) {
-          console.log('V4 format failed:', e)
+          console.log('Mainnet subgraph failed:', e)
         }
         
-        // If we found project data but it's clearly wrong (handle is "diasporadao"), 
-        // this means we're getting data from a different project
-        if (projectData && projectData.handle === 'diasporadao') {
-          console.log('Found wrong project (diasporadao), using fallback data')
-          projectData = null
-        }
-        
-        // If we found project data but it has no volume, it means the indexing isn't complete
-        if (projectData && parseFloat(projectData.volume || '0') === 0 && parseFloat(projectData.volumeUSD || '0') === 0) {
-          console.log('Found project but no volume data, using fallback data')
-          projectData = null
-        }
-        
-        // If no valid project data found, use the known values from the Juicebox website
-        if (!projectData) {
-          console.log('Using fallback data - project may be too new or on different chain')
+        // If we got meaningful data from the API, use it
+        if (totalVolume > 0 && totalContributors > 0) {
           setData({
-            totalRaised: 2, // As shown on juicebox.money/v4/eth:114
-            contributorCount: 1, // As shown on juicebox.money/v4/eth:114
+            totalRaised: totalVolume,
+            contributorCount: totalContributors,
             loading: false,
             error: null
           })
           return
         }
         
-        // Convert the volume data correctly
-        const volumeETH = parseFloat(projectData.volume || '0') / 1e18
-        const volumeUSD = parseFloat(projectData.volumeUSD || '0') / 1e18
-        
-        // Use USD if available, otherwise convert ETH to USD (~$3500/ETH)
-        const totalRaisedUSD = volumeUSD > 0 ? volumeUSD : volumeETH * 3500
-        
+        // Otherwise, use the manually updated current data
+        console.log('Using manually updated fundraising data')
         setData({
-          totalRaised: totalRaisedUSD,
-          contributorCount: projectData.contributorsCount || projectData.paymentsCount || 0,
+          totalRaised: CURRENT_FUNDRAISING_DATA.totalRaised,
+          contributorCount: CURRENT_FUNDRAISING_DATA.contributorCount,
           loading: false,
           error: null
         })
         
       } catch (error) {
         console.error('Error fetching Juicebox data:', error)
-        // Use the known values from the Juicebox website
+        // Fall back to manual data
         setData({
-          totalRaised: 2, // As shown on juicebox.money/v4/eth:114
-          contributorCount: 1, // As shown on juicebox.money/v4/eth:114
+          totalRaised: CURRENT_FUNDRAISING_DATA.totalRaised,
+          contributorCount: CURRENT_FUNDRAISING_DATA.contributorCount,
           loading: false,
           error: null
         })
