@@ -2,13 +2,6 @@ import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { Target, Users, Clock, Trophy, Zap } from 'lucide-react'
 
-// Current fundraising status - update these when new donations come in
-const CURRENT_FUNDRAISING_DATA = {
-  totalRaised: 126, // Update this manually when you see new donations
-  contributorCount: 1, // Update this manually when you see new contributors
-  lastUpdated: '2025-07-07' // Keep track of when this was last updated
-}
-
 // Juicebox API hook - trying multiple approaches to get live data
 function useJuiceboxProject(projectId: number) {
   const [data, setData] = useState({
@@ -83,11 +76,36 @@ function useJuiceboxProject(projectId: number) {
           return
         }
         
-        // Otherwise, use the manually updated current data
+        // Approach 2: Scrape the Juicebox website directly
+        try {
+          console.log('Trying to fetch data from Juicebox website...')
+          
+          // Use a proxy or fetch service to get around CORS
+          const websiteResponse = await fetch(`/api/juicebox-data?projectId=${projectId}`)
+          
+          if (websiteResponse.ok) {
+            const websiteData = await websiteResponse.json()
+            console.log('Website scraping response:', websiteData)
+            
+            if (websiteData.totalRaised && websiteData.contributorCount) {
+              setData({
+                totalRaised: websiteData.totalRaised,
+                contributorCount: websiteData.contributorCount,
+                loading: false,
+                error: null
+              })
+              return
+            }
+          }
+        } catch (e) {
+          console.log('Website scraping failed:', e)
+        }
+        
+        // Approach 3: Use the current values from the config as fallback
         console.log('Using manually updated fundraising data')
         setData({
-          totalRaised: CURRENT_FUNDRAISING_DATA.totalRaised,
-          contributorCount: CURRENT_FUNDRAISING_DATA.contributorCount,
+          totalRaised: 126, // Current fallback value
+          contributorCount: 1, // Current fallback value
           loading: false,
           error: null
         })
@@ -96,8 +114,8 @@ function useJuiceboxProject(projectId: number) {
         console.error('Error fetching Juicebox data:', error)
         // Fall back to manual data
         setData({
-          totalRaised: CURRENT_FUNDRAISING_DATA.totalRaised,
-          contributorCount: CURRENT_FUNDRAISING_DATA.contributorCount,
+          totalRaised: 126,
+          contributorCount: 1,
           loading: false,
           error: null
         })
