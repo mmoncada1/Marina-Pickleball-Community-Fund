@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import { useState, useEffect } from 'react'
 import { Target, Users, Clock, Trophy, Zap } from 'lucide-react'
+import WalletButton from '../components/WalletButton'
+import ContributionSection from '../components/ContributionSection'
 
 // Juicebox API hook - trying multiple approaches to get live data
 function useJuiceboxProject(projectId: number) {
@@ -163,8 +165,11 @@ export default function Home() {
               </div>
               <h1 className="text-xl font-bold text-gray-900">MPCF</h1>
             </div>
-            <div className="text-sm text-gray-600">
-              Marina Pickleball Community Fund
+            <div className="flex items-center gap-4">
+              <div className="hidden md:block text-sm text-gray-600">
+                Marina Pickleball Community Fund
+              </div>
+              <WalletButton />
             </div>
           </div>
         </header>
@@ -187,109 +192,14 @@ export default function Home() {
               Increase game throughput by 50% and make our community courts better for everyone.
             </p>
 
-            {/* Progress Card */}
-            <div className="card max-w-2xl mx-auto mb-8">
-              <div className="text-center mb-6">
-                {loading ? (
-                  <div className="animate-pulse">
-                    <div className="h-12 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-3 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                  </div>
-                ) : error ? (
-                  <div className="text-orange-600">
-                    <p className="text-sm">{error}</p>
-                    <p className="text-xs text-gray-500 mt-1">Data updates every 30 seconds</p>
-                  </div>
-                ) : null}
-                
-                <div className={`text-4xl font-bold text-gray-900 mb-2 ${loading ? 'opacity-50' : ''}`}>
-                  ${Math.round(totalRaised).toFixed(0)}
-                  <span className="text-lg text-gray-500 font-normal"> / ${fundingGoal.toFixed(0)}</span>
-                  {!loading && !error && (
-                    <div className="text-xs text-green-600 font-normal mt-1">
-                      ● Live from Juicebox
-                    </div>
-                  )}
-                </div>
-                <div className="progress-bar mb-4">
-                  <div 
-                    className="progress-fill transition-all duration-1000 ease-out" 
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{progress.toFixed(0)}% funded</span>
-                  <span>{daysRemaining} days left</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 text-center border-t pt-6">
-                <div>
-                  <div className={`text-2xl font-bold text-primary-600 ${loading ? 'animate-pulse' : ''}`}>
-                    {loading ? '...' : contributorCount}
-                  </div>
-                  <div className="text-sm text-gray-600">Contributors</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-secondary-600">15</div>
-                  <div className="text-sm text-gray-600">Target Contributors</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {goalReached ? '✓' : daysRemaining}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {goalReached ? 'Goal Reached!' : 'Days Left'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Contribution Section */}
-            {!goalReached && (
-              <div className="card max-w-md mx-auto">
-                <h3 className="text-xl font-semibold mb-4">Contribute Now</h3>
-                
-                <div className="mb-6">
-                  <p className="text-gray-600 text-sm mb-4">
-                    We're using Juicebox for secure, transparent fundraising. 
-                    Click below to contribute to our pickleball nets fund.
-                  </p>
-                  
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <div className="text-sm text-gray-700">
-                      <div className="font-medium mb-2">Suggested Contributions:</div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span>Community Supporter</span>
-                        <span className="font-medium">$50</span>
-                      </div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span>Net Champion</span>
-                        <span className="font-medium text-primary-600">$100</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Court Hero</span>
-                        <span className="font-medium">$200+</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <a
-                  href="https://juicebox.money/v4/eth:114"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary w-full inline-block text-center no-underline"
-                >
-                  Contribute on Juicebox →
-                </a>
-                
-                <div className="mt-3 text-xs text-gray-500 text-center">
-                  Opens in new tab • Secure payments via Juicebox
-                </div>
-              </div>
-            )}
+            <ContributionSection
+              totalRaised={totalRaised}
+              fundingGoal={fundingGoal}
+              progress={progress}
+              loading={loading}
+              error={error}
+            />
 
             {goalReached && (
               <div className="card max-w-md mx-auto bg-green-50 border-green-200">

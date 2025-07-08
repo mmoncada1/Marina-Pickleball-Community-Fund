@@ -35,7 +35,8 @@ A decentralized crowdfunding platform for improving pickleball facilities at Mos
 ## Tech Stack
 - **Frontend**: Next.js, TypeScript, Tailwind CSS
 - **Smart Contracts**: Solidity, Hardhat
-- **Web3**: Wagmi, RainbowKit, Viem
+- **Web3**: Wagmi, Privy, Viem
+- **Wallet Integration**: Privy (Email/SMS + Embedded Wallets)
 - **Blockchain**: Ethereum (with L2 support)
 
 ## Getting Started
@@ -43,6 +44,10 @@ A decentralized crowdfunding platform for improving pickleball facilities at Mos
 ```bash
 # Install dependencies
 npm install
+
+# Set up Privy wallet integration
+cp .env.example .env.local
+# Add your NEXT_PUBLIC_PRIVY_APP_ID to .env.local
 
 # Run development server
 npm run dev
@@ -54,13 +59,17 @@ npm run compile
 npm run deploy
 ```
 
+For detailed wallet setup instructions, see [PRIVY_SETUP.md](./PRIVY_SETUP.md).
+
 ## Features
 - 🎯 Simple crowdfunding interface
-- 💰 Smart contract treasury management
+- 💰 Smart contract treasury management  
 - 📊 Real-time contribution tracking
 - 🏆 Contributor recognition
 - 📋 Transparent fund allocation
 - 🗳️ Future governance potential
+- 🔗 **Easy wallet onboarding** with Privy (Email/SMS + Embedded Wallets)
+- 💳 **One-click contributions** directly to smart contract
 
 ## Contributing
 Join the Marina pickleball community in making our courts better for everyone!
