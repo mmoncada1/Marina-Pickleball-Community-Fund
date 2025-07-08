@@ -38,6 +38,7 @@ The integration provides:
 - **Multiple Wallet Support**: MetaMask, Coinbase Wallet, WalletConnect
 - **Seamless Onboarding**: Email/SMS authentication for web2 users
 - **Smart Contract Integration**: Direct contribution to the funding contract
+- **USDC Onramp**: Pay with Venmo to receive USDC (via ZKP2P v2)
 
 ## Components Added
 
@@ -56,6 +57,13 @@ The integration provides:
    - Preset and custom amounts
    - Direct smart contract integration
    - Transaction status tracking
+   - Payment method selection (ETH or Venmo → USDC)
+
+4. **`USDCOnramp`** (`src/components/USDCOnramp.tsx`):
+   - Venmo to USDC onramp flow
+   - Integration with ZKP2P v2
+   - Real-time order status tracking
+   - Mobile-friendly Venmo app integration
 
 ## Configuration Options
 

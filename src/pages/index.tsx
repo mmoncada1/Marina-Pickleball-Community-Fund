@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Target, Users, Clock, Trophy, Zap } from 'lucide-react'
 import WalletButton from '../components/WalletButton'
 import ContributionSection from '../components/ContributionSection'
+import WalletBalance from '../components/WalletBalance'
 
 // Juicebox API hook - trying multiple approaches to get live data
 function useJuiceboxProject(projectId: number) {
@@ -191,6 +192,9 @@ export default function Home() {
               Help us raise $1,500 to buy two professional pickleball nets for Moscone Park. 
               Increase game throughput by 50% and make our community courts better for everyone.
             </p>
+
+            {/* Wallet Balance Section */}
+            <WalletBalance />
 
             {/* Contribution Section */}
             <ContributionSection

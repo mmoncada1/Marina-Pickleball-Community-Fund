@@ -4,17 +4,19 @@ import { PrivyProvider as BasePrivyProvider } from '@privy-io/react-auth'
 import { WagmiProvider } from '@privy-io/wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { http, createConfig } from 'wagmi'
-import { mainnet, sepolia, arbitrum, arbitrumSepolia } from 'wagmi/chains'
+import { mainnet, sepolia, arbitrum, arbitrumSepolia, base, baseSepolia } from 'wagmi/chains'
 import { ReactNode } from 'react'
 
 // Configure wagmi
 const config = createConfig({
-  chains: [mainnet, sepolia, arbitrum, arbitrumSepolia],
+  chains: [mainnet, sepolia, arbitrum, arbitrumSepolia, base, baseSepolia],
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
     [arbitrum.id]: http(),
     [arbitrumSepolia.id]: http(),
+    [base.id]: http(),
+    [baseSepolia.id]: http(),
   },
 })
 
@@ -48,11 +50,9 @@ export default function PrivyProvider({ children }: PrivyProviderProps) {
             // Coinbase Wallet is enabled by default
             connectionOptions: 'smartWalletOnly',
           },
-          metamask: {
-            // MetaMask is enabled by default
-          },
           walletConnect: {
             // WalletConnect is enabled by default
+            enabled: true,
           },
         },
       }}

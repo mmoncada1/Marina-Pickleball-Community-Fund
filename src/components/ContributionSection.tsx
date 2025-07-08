@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { usePrivy } from '@privy-io/react-auth'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { parseEther, formatEther } from 'viem'
+import { base } from 'wagmi/chains'
 import { Zap, Target, Clock } from 'lucide-react'
+import USDCOnramp from './USDCOnramp'
+
+type PaymentMethod = 'eth' | 'usdc'
 
 // Replace with your actual contract address and ABI
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`
@@ -39,6 +43,7 @@ export default function ContributionSection({
   const { address, isConnected } = useAccount()
   const [contributionAmount, setContributionAmount] = useState('0.01')
   const [isContributing, setIsContributing] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('eth')
 
   const { 
     writeContract, 
@@ -74,6 +79,7 @@ export default function ContributionSection({
         functionName: 'contribute',
         value: parseEther(contributionAmount),
         account: address,
+        chain: base,
       })
       
     } catch (error) {
@@ -85,6 +91,11 @@ export default function ContributionSection({
   }
 
   const presetAmounts = ['0.01', '0.05', '0.1', '0.25']
+
+  // Show USDC onramp if selected
+  if (paymentMethod === 'usdc') {
+    return <USDCOnramp onBack={() => setPaymentMethod('eth')} />
+  }
 
   return (
     <div className="card max-w-2xl mx-auto mb-8">
@@ -129,6 +140,37 @@ export default function ContributionSection({
       {/* Contribution Form */}
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Make a Contribution</h3>
+        
+        {/* Payment method selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Choose Payment Method
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setPaymentMethod('eth')}
+              className={`p-4 rounded-lg border-2 transition-colors ${
+                (paymentMethod as PaymentMethod) === 'eth'
+                  ? 'border-blue-600 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
+              }`}
+            >
+              <div className="font-medium mb-1">ETH</div>
+              <div className="text-sm opacity-75">Direct from wallet</div>
+            </button>
+            <button
+              onClick={() => setPaymentMethod('usdc')}
+              className={`p-4 rounded-lg border-2 transition-colors ${
+                (paymentMethod as PaymentMethod) === 'usdc'
+                  ? 'border-green-600 bg-green-50 text-green-700'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
+              }`}
+            >
+              <div className="font-medium mb-1">Get USDC</div>
+              <div className="text-sm opacity-75">Venmo, Cash App, etc.</div>
+            </button>
+          </div>
+        </div>
         
         {/* Preset amounts */}
         <div className="grid grid-cols-4 gap-2 mb-4">

@@ -17,6 +17,7 @@
     "@rainbow-me/rainbowkit": "^2.0.8",
     "@tanstack/react-query": "^5.0.0",
     "autoprefixer": "^10.0.1",
+    "axios": "^1.10.0",
     "caniuse-lite": "^1.0.30001727",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
