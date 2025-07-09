@@ -7,7 +7,7 @@ import WalletBalance from '../components/WalletBalance'
 import { PayProjectForm } from '../components/pay-project-form'
 import { SimplifiedPayment } from '../components/SimplifiedPayment'
 
-// Juicebox API hook - trying multiple approaches to get live data
+// Juicebox API hook - using website scraping for Base network project
 function useJuiceboxProject(projectId: number) {
   const [data, setData] = useState({
     totalRaised: 0,
@@ -21,116 +21,47 @@ function useJuiceboxProject(projectId: number) {
       try {
         setData(prev => ({ ...prev, loading: true, error: null }))
         
-        // Try to get the Marina Pickleball project data from multiple sources
-        let projectData = null
-        let totalVolume = 0
-        let totalContributors = 0
+        // Fetch from our API
+        const response = await fetch(`/api/juicebox-data?projectId=${projectId}`)
         
-        // Approach 1: Try Juicebox V4 subgraph (Ethereum mainnet)
-        try {
-          const response = await fetch('https://api.studio.thegraph.com/query/30654/mainnet-dev/version/latest', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              query: `
-                query GetProject($id: ID!) {
-                  project(id: $id) {
-                    id
-                    handle
-                    volume
-                    volumeUSD
-                    paymentsCount
-                    contributorsCount
-                  }
-                }
-              `,
-              variables: {
-                id: `2-${projectId}` // V4 format
-              }
+        if (response.ok) {
+          const apiData = await response.json()
+          
+          if (apiData.success) {
+            setData({
+              totalRaised: apiData.totalRaised || 0,
+              contributorCount: apiData.contributorCount || 0,
+              loading: false,
+              error: null
             })
-          })
-          
-          if (response.ok) {
-            const result = await response.json()
-            console.log('Mainnet API Response:', result)
-            
-            if (result.data?.project) {
-              projectData = result.data.project
-              console.log('Found mainnet project data:', projectData)
-              
-              const volumeETH = parseFloat(projectData.volume || '0') / 1e18
-              const volumeUSD = parseFloat(projectData.volumeUSD || '0') / 1e18
-              totalVolume += volumeUSD > 0 ? volumeUSD : volumeETH * 3500
-              totalContributors += projectData.contributorsCount || projectData.paymentsCount || 0
-            }
+            return
           }
-        } catch (e) {
-          console.log('Mainnet subgraph failed:', e)
         }
         
-        // If we got meaningful data from the API, use it
-        if (totalVolume > 0 && totalContributors > 0) {
-          setData({
-            totalRaised: totalVolume,
-            contributorCount: totalContributors,
-            loading: false,
-            error: null
-          })
-          return
-        }
-        
-        // Approach 2: Scrape the Juicebox website directly
-        try {
-          console.log('Trying to fetch data from Juicebox website...')
-          
-          // Use a proxy or fetch service to get around CORS
-          const websiteResponse = await fetch(`/api/juicebox-data?projectId=${projectId}`)
-          
-          if (websiteResponse.ok) {
-            const websiteData = await websiteResponse.json()
-            console.log('Website scraping response:', websiteData)
-            
-            if (websiteData.totalRaised && websiteData.contributorCount) {
-              setData({
-                totalRaised: websiteData.totalRaised,
-                contributorCount: websiteData.contributorCount,
-                loading: false,
-                error: null
-              })
-              return
-            }
-          }
-        } catch (e) {
-          console.log('Website scraping failed:', e)
-        }
-        
-        // Approach 3: Use the current values from the config as fallback
-        console.log('Using manually updated fundraising data')
+        // If API fails, fall back to manual data
         setData({
-          totalRaised: 126, // Current fallback value
-          contributorCount: 1, // Current fallback value
+          totalRaised: 143, // Current known value
+          contributorCount: 3,
           loading: false,
-          error: null
+          error: 'Using fallback data - live data temporarily unavailable'
         })
         
       } catch (error) {
         console.error('Error fetching Juicebox data:', error)
         // Fall back to manual data
         setData({
-          totalRaised: 126,
-          contributorCount: 1,
+          totalRaised: 143,
+          contributorCount: 3,
           loading: false,
-          error: null
+          error: 'Using fallback data - live data temporarily unavailable'
         })
       }
     }
 
     fetchProjectData()
     
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchProjectData, 30000)
+    // Refresh data every 60 seconds
+    const interval = setInterval(fetchProjectData, 60000)
     
     return () => clearInterval(interval)
   }, [projectId])
@@ -339,7 +270,7 @@ export default function Home() {
                   <span className="text-2xl font-bold text-white">SO</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-1">Sean O'Brien</h3>
-                <p className="text-primary-600 font-medium mb-2">SF Public Works</p>
+                <p className="text-primary-600 font-medium mb-2">Civil Engineer</p>
                 <p className="text-gray-600 text-sm">
                   Navigating city regulations and ensuring proper donation procedures.
                 </p>
