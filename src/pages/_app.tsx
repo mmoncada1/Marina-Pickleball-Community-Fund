@@ -12,6 +12,7 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   
+  
   if (!privyAppId) {
     console.error('NEXT_PUBLIC_PRIVY_APP_ID is not defined in environment variables');
     return <div>Configuration Error: Missing Privy App ID</div>;
