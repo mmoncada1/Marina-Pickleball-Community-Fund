@@ -12,6 +12,13 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   
+  // Debug production configuration
+  console.log('🔧 Privy Config Debug:', {
+    appId: privyAppId ? 'Set' : 'Missing',
+    domain: typeof window !== 'undefined' ? window.location.origin : 'SSR',
+    isHTTPS: typeof window !== 'undefined' ? window.location.protocol === 'https:' : 'Unknown',
+    nodeEnv: process.env.NODE_ENV
+  });
   
   if (!privyAppId) {
     console.error('NEXT_PUBLIC_PRIVY_APP_ID is not defined in environment variables');
@@ -40,7 +47,7 @@ export default function App({ Component, pageProps }: AppProps) {
         supportedChains: [base, mainnet, optimism, arbitrum],
         // Configure default chain for all operations (Base)
         defaultChain: base,
-        // Enable funding methods specifically for Base
+        // Updated funding configuration
         fundingMethodConfig: {
           moonpay: {
             useSandbox: false, // Set to true for testing
