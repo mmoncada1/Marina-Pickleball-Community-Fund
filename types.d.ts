@@ -13,3 +13,14 @@ declare namespace NodeJS {
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?: string
   }
 }
+
+// Privy window object
+declare global {
+  interface Window {
+    privy?: {
+      funding: {
+        showFundingModal: () => void;
+      };
+    };
+  }
+}
