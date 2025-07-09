@@ -6,21 +6,34 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagm
 import { parseEther, formatEther } from 'viem'
 import { base } from 'wagmi/chains'
 import { Zap, Target, Clock } from 'lucide-react'
-import USDCOnramp from './USDCOnramp'
+import AccountFunding from './AccountFunding'
 
-type PaymentMethod = 'eth' | 'usdc'
+// Juicebox v4 Base ETH Payment Terminal Contract Address
+// This is the Juicebox ETH payment terminal on Base network
+const JUICEBOX_ETH_TERMINAL = '0x82129d4109625F94582bDdF6101a8Cd1a27919f5' as `0x${string}`
 
-// Replace with your actual contract address and ABI
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`
+// Marina Pickleball project ID on Base network
+const PROJECT_ID = 107
 
-// Minimal ABI for contributing to the contract
-const CONTRACT_ABI = [
+// Minimal ABI for paying to a Juicebox project
+const JUICEBOX_TERMINAL_ABI = [
   {
-    name: 'contribute',
+    name: 'pay',
     type: 'function',
     stateMutability: 'payable',
-    inputs: [],
-    outputs: [],
+    inputs: [
+      { name: '_projectId', type: 'uint256' },
+      { name: '_amount', type: 'uint256' },
+      { name: '_token', type: 'address' },
+      { name: '_beneficiary', type: 'address' },
+      { name: '_minReturnedTokens', type: 'uint256' },
+      { name: '_preferClaimedTokens', type: 'bool' },
+      { name: '_memo', type: 'string' },
+      { name: '_metadata', type: 'bytes' }
+    ],
+    outputs: [
+      { name: 'beneficiaryTokenCount', type: 'uint256' }
+    ],
   },
 ] as const
 
@@ -43,7 +56,7 @@ export default function ContributionSection({
   const { address, isConnected } = useAccount()
   const [contributionAmount, setContributionAmount] = useState('0.01')
   const [isContributing, setIsContributing] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('eth')
+  const [showFunding, setShowFunding] = useState(false)
 
   const { 
     writeContract, 
@@ -65,19 +78,32 @@ export default function ContributionSection({
       return
     }
 
-    if (!CONTRACT_ADDRESS) {
-      alert('Contract address not configured. Please check your environment variables.')
+    if (!address) {
+      alert('Please connect your wallet first.')
       return
     }
 
     try {
       setIsContributing(true)
       
+      const amountWei = parseEther(contributionAmount)
+      
+      // Call the Juicebox pay function to contribute to project #107
       await writeContract({
-        address: CONTRACT_ADDRESS,
-        abi: CONTRACT_ABI,
-        functionName: 'contribute',
-        value: parseEther(contributionAmount),
+        address: JUICEBOX_ETH_TERMINAL,
+        abi: JUICEBOX_TERMINAL_ABI,
+        functionName: 'pay',
+        args: [
+          BigInt(PROJECT_ID), // _projectId: Marina Pickleball project #107
+          amountWei, // _amount: contribution amount in wei
+          '0x0000000000000000000000000000000000000000' as `0x${string}`, // _token: ETH (zero address)
+          address, // _beneficiary: contributor's address
+          BigInt(0), // _minReturnedTokens: minimum project tokens to receive (0 = any amount)
+          false, // _preferClaimedTokens: prefer unclaimed/reserved tokens
+          `Marina Pickleball Community Fund - ${contributionAmount} ETH for nets at Moscone Park`, // _memo
+          '0x' as `0x${string}` // _metadata: empty metadata
+        ],
+        value: amountWei,
         account: address,
         chain: base,
       })
@@ -92,9 +118,19 @@ export default function ContributionSection({
 
   const presetAmounts = ['0.01', '0.05', '0.1', '0.25']
 
-  // Show USDC onramp if selected
-  if (paymentMethod === 'usdc') {
-    return <USDCOnramp onBack={() => setPaymentMethod('eth')} />
+  // Show funding component if user wants to fund their wallet
+  if (showFunding) {
+    return (
+      <div className="card max-w-2xl mx-auto mb-8">
+        <AccountFunding 
+          onSuccess={() => {
+            setShowFunding(false)
+            // Refresh the page or balances if needed
+          }}
+          onCancel={() => setShowFunding(false)}
+        />
+      </div>
+    )
   }
 
   return (
@@ -141,35 +177,14 @@ export default function ContributionSection({
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Make a Contribution</h3>
         
-        {/* Payment method selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Choose Payment Method
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setPaymentMethod('eth')}
-              className={`p-4 rounded-lg border-2 transition-colors ${
-                (paymentMethod as PaymentMethod) === 'eth'
-                  ? 'border-blue-600 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
-              }`}
-            >
-              <div className="font-medium mb-1">ETH</div>
-              <div className="text-sm opacity-75">Direct from wallet</div>
-            </button>
-            <button
-              onClick={() => setPaymentMethod('usdc')}
-              className={`p-4 rounded-lg border-2 transition-colors ${
-                (paymentMethod as PaymentMethod) === 'usdc'
-                  ? 'border-green-600 bg-green-50 text-green-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
-              }`}
-            >
-              <div className="font-medium mb-1">Get USDC</div>
-              <div className="text-sm opacity-75">Venmo, Cash App, etc.</div>
-            </button>
-          </div>
+        {/* Project Information */}
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800">
+            <strong>Contributing to:</strong> Marina Pickleball Fund (Project #{PROJECT_ID}) on Base Network
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            Via Juicebox v4 - All contributions go directly to the project treasury
+          </p>
         </div>
         
         {/* Preset amounts */}
@@ -234,6 +249,18 @@ export default function ContributionSection({
           )}
         </button>
 
+        {/* Fund wallet link */}
+        {authenticated && isConnected && (
+          <div className="mt-3 text-center">
+            <button
+              onClick={() => setShowFunding(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Need ETH for gas? Fund your wallet with cards or Apple Pay →
+            </button>
+          </div>
+        )}
+
         {/* Transaction status */}
         {hash && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -247,9 +274,19 @@ export default function ContributionSection({
               )}
             </p>
             {hash && (
-              <p className="text-xs text-blue-600 mt-1 font-mono break-all">
-                TX: {hash}
-              </p>
+              <div className="mt-1">
+                <p className="text-xs text-blue-600 font-mono break-all">
+                  TX: {hash}
+                </p>
+                <a
+                  href={`https://basescan.org/tx/${hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  View on BaseScan →
+                </a>
+              </div>
             )}
           </div>
         )}
@@ -259,6 +296,17 @@ export default function ContributionSection({
             <p className="text-sm text-red-800">
               Transaction failed: {writeError.message}
             </p>
+            {/* Show funding option if transaction failed due to insufficient gas */}
+            {writeError.message.toLowerCase().includes('insufficient') && (
+              <div className="mt-2">
+                <button
+                  onClick={() => setShowFunding(true)}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  Fund your wallet to cover gas fees →
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -271,6 +319,17 @@ export default function ContributionSection({
             <li>• Community court improvement project</li>
             <li>• 50% increase in game throughput</li>
           </ul>
+          <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+            <strong>Note:</strong> Your contribution will appear on the Juicebox project page at{' '}
+            <a 
+              href="https://juicebox.money/v4/base:107" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              juicebox.money/v4/base:107
+            </a>
+          </div>
         </div>
       </div>
     </div>

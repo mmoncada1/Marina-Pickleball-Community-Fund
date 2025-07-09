@@ -4,6 +4,7 @@ import { Target, Users, Clock, Trophy, Zap } from 'lucide-react'
 import WalletButton from '../components/WalletButton'
 import ContributionSection from '../components/ContributionSection'
 import WalletBalance from '../components/WalletBalance'
+import { PayProjectForm } from '../components/pay-project-form'
 
 // Juicebox API hook - trying multiple approaches to get live data
 function useJuiceboxProject(projectId: number) {
@@ -137,8 +138,8 @@ function useJuiceboxProject(projectId: number) {
 }
 
 export default function Home() {
-  // Fetch live data from Juicebox project #114
-  const { totalRaised, contributorCount, loading, error } = useJuiceboxProject(114)
+  // Fetch live data from Juicebox project #107 on Base network (Marina Pickleball)
+  const { totalRaised, contributorCount, loading, error } = useJuiceboxProject(107)
   
   // Static configuration
   const fundingGoal = 1500 // $1,500 goal
@@ -204,6 +205,21 @@ export default function Home() {
               loading={loading}
               error={error}
             />
+
+            {/* JuicePay SDK Integration */}
+            <div className="mt-12 mb-8">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  Contribute with JuicePay SDK
+                </h3>
+                <p className="text-gray-600">
+                  New payment integration using the official Juicebox SDK
+                </p>
+              </div>
+              <div className="max-w-lg mx-auto">
+                <PayProjectForm />
+              </div>
+            </div>
 
             {goalReached && (
               <div className="card max-w-md mx-auto bg-green-50 border-green-200">

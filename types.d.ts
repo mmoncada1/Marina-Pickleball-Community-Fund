@@ -4,15 +4,7 @@ declare module 'next/head' {
   export default Head
 }
 
-declare module 'lucide-react' {
-  import { ComponentType } from 'react'
-  export const Target: ComponentType<any>
-  export const Users: ComponentType<any>
-  export const Clock: ComponentType<any>
-  export const Trophy: ComponentType<any>
-  export const Zap: ComponentType<any>
-  export const ChevronRight: ComponentType<any>
-}
+// Allow all lucide-react icons - removed restrictive declaration
 
 declare namespace NodeJS {
   interface ProcessEnv {

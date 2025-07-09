@@ -21,8 +21,8 @@ export interface TransactionStatus {
  */
 export async function checkTransactionStatus(txHash: string): Promise<TransactionStatus> {
   try {
-    // Skip check for simulation hashes
-    if (txHash.startsWith('0xSIMULATED') || txHash.startsWith('0xFAILED')) {
+    // All transactions must be real - no simulated transactions allowed
+    if (!txHash || !txHash.startsWith('0x') || txHash.length !== 66) {
       return {
         exists: false,
         confirmed: false
@@ -82,17 +82,13 @@ export function getBaseScanUrl(txHash: string): string {
  * Validate if hash looks like a real transaction hash
  */
 export function isValidTxHash(txHash: string): boolean {
-  return /^0x[a-fA-F0-9]{64}$/.test(txHash) && 
-         !txHash.startsWith('0xSIMULATED') && 
-         !txHash.startsWith('0xFAILED')
+  return /^0x[a-fA-F0-9]{64}$/.test(txHash)
 }
 
 /**
  * Get transaction type description
  */
-export function getTransactionType(txHash: string): 'real' | 'simulated' | 'failed' | 'invalid' {
-  if (txHash.startsWith('0xSIMULATED')) return 'simulated'
-  if (txHash.startsWith('0xFAILED')) return 'failed'
+export function getTransactionType(txHash: string): 'real' | 'invalid' {
   if (isValidTxHash(txHash)) return 'real'
   return 'invalid'
 }

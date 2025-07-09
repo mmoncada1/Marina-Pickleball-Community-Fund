@@ -1,29 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useTokenBalances } from '../hooks/useTokenBalances'
-import CowswapIntegration from './CowswapIntegration'
-import GaslessCowswap from './GaslessCowswap'
-import { Users, Target, Clock, Zap } from 'lucide-react'
-import { formatUnits } from 'viem'
+import { Users, Target } from 'lucide-react'
 
 interface WalletBalanceProps {
-  // No props needed since we handle Cowswap internally
+  // No props needed
 }
 
 export default function WalletBalance({}: WalletBalanceProps) {
   const { address, isConnected } = useAccount()
   const { balances, loading, error, refetch } = useTokenBalances()
-  const [showSwap, setShowSwap] = useState(false)
-  const [swapAmount, setSwapAmount] = useState('')
-  const [showCowswap, setShowCowswap] = useState(false)
   const [addressCopied, setAddressCopied] = useState(false)
 
   const usdcBalance = balances.find(b => b.symbol === 'USDC')
   const ethBalance = balances.find(b => b.symbol === 'ETH')
-
-  const hasUSDC = usdcBalance && parseFloat(usdcBalance.balance) > 0
 
   // Helper function to format address
   const formatAddress = (addr: string) => {
@@ -45,26 +37,6 @@ export default function WalletBalance({}: WalletBalanceProps) {
 
   if (!isConnected || !address) {
     return null
-  }
-
-  // Show new Gasless Cowswap integration if user has chosen an amount to swap
-  if (showCowswap && swapAmount) {
-    return (
-      <div className="max-w-4xl mx-auto mb-6">
-        <GaslessCowswap
-          usdcAmount={swapAmount}
-          onSuccess={() => {
-            setShowCowswap(false)
-            setShowSwap(false)
-            setSwapAmount('')
-            refetch() // Refresh balances after swap
-          }}
-          onCancel={() => {
-            setShowCowswap(false)
-          }}
-        />
-      </div>
-    )
   }
 
   return (
@@ -133,140 +105,53 @@ export default function WalletBalance({}: WalletBalanceProps) {
           </button>
         </div>
       ) : (
-        <>
-          <div className="space-y-3 mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Available Funds on Base</h4>
-            
-            {/* ETH Balance */}
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full"></div>
-                <span className="font-medium text-gray-900">ETH</span>
-                <span className="text-xs text-gray-500">(Base)</span>
-              </div>
-              <div className="text-right">
-                <span className="font-semibold text-gray-900">
-                  {parseFloat(ethBalance?.balance || '0').toFixed(4)} ETH
-                </span>
-                <div className="text-xs text-gray-500">
-                  ≈ ${(parseFloat(ethBalance?.balance || '0') * 3400).toFixed(2)} USD
-                </div>
-              </div>
+        <div className="space-y-3 mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Available Funds on Base</h4>
+          
+          {/* ETH Balance */}
+          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full"></div>
+              <span className="font-medium text-gray-900">ETH</span>
+              <span className="text-xs text-gray-500">(Base)</span>
             </div>
-
-            {/* USDC Balance */}
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-green-500 rounded-full"></div>
-                <span className="font-medium text-gray-900">USDC</span>
-                <span className="text-xs text-gray-500">(Base)</span>
-              </div>
-              <div className="text-right">
-                <span className="font-semibold text-gray-900">
-                  ${parseFloat(usdcBalance?.balance || '0').toFixed(2)}
-                </span>
-                {hasUSDC && (
-                  <div className="text-xs text-gray-500">
-                    {parseFloat(usdcBalance?.balance || '0').toFixed(6)} USDC
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Total Value */}
-            <div className="border-t pt-3 mt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Total Portfolio Value</span>
-                <span className="text-lg font-bold text-gray-900">
-                  ${((parseFloat(ethBalance?.balance || '0') * 3400) + parseFloat(usdcBalance?.balance || '0')).toFixed(2)}
-                </span>
+            <div className="text-right">
+              <span className="font-semibold text-gray-900">
+                {parseFloat(ethBalance?.balance || '0').toFixed(4)} ETH
+              </span>
+              <div className="text-xs text-gray-500">
+                ≈ ${(parseFloat(ethBalance?.balance || '0') * 3400).toFixed(2)} USD
               </div>
             </div>
           </div>
 
-          {/* USDC to ETH Swap Option */}
-          {hasUSDC && !showSwap && (
-            <div className="border-t pt-4">
-              <button
-                onClick={() => setShowSwap(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-              >
-                <Zap className="w-4 h-4" />
-                Convert USDC to ETH
-              </button>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                Swap your USDC for ETH to contribute to the campaign
-              </p>
+          {/* USDC Balance */}
+          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-green-500 rounded-full"></div>
+              <span className="font-medium text-gray-900">USDC</span>
+              <span className="text-xs text-gray-500">(Base)</span>
             </div>
-          )}
-
-          {/* Swap Interface */}
-          {showSwap && hasUSDC && (
-            <div className="border-t pt-4">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  USDC Amount to Convert
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max={usdcBalance?.balance}
-                    value={swapAmount}
-                    onChange={(e) => setSwapAmount(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0.00"
-                  />
-                  <button
-                    onClick={() => setSwapAmount(usdcBalance?.balance || '0')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    MAX
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Available: ${parseFloat(usdcBalance?.balance || '0').toFixed(2)} USDC
-                </p>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowSwap(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowCowswap(true)
-                  }}
-                  disabled={!swapAmount || parseFloat(swapAmount) <= 0 || parseFloat(swapAmount) > parseFloat(usdcBalance?.balance || '0')}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  Convert to ETH
-                </button>
-              </div>
-
-              <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <Zap className="w-4 h-4 text-green-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800 mb-1">⚡ Gasless Swaps Available!</p>
-                    <p className="text-xs text-green-700">
-                      <strong>No ETH needed:</strong> Our new gasless swap options let you convert USDC to ETH 
-                      without having ETH for gas fees. Fees are automatically deducted from your swap amount.
-                    </p>
-                    <p className="text-xs text-green-600 mt-1 font-medium">
-                      • Traditional swap (needs ETH) • Gasless relayer • Smart wallet options
-                    </p>
-                  </div>
-                </div>
+            <div className="text-right">
+              <span className="font-semibold text-gray-900">
+                ${parseFloat(usdcBalance?.balance || '0').toFixed(2)}
+              </span>
+              <div className="text-xs text-gray-500">
+                {parseFloat(usdcBalance?.balance || '0').toFixed(6)} USDC
               </div>
             </div>
-          )}
-        </>
+          </div>
+
+          {/* Total Value */}
+          <div className="border-t pt-3 mt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">Total Portfolio Value</span>
+              <span className="text-lg font-bold text-gray-900">
+                ${((parseFloat(ethBalance?.balance || '0') * 3400) + parseFloat(usdcBalance?.balance || '0')).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
