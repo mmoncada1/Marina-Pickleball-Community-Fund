@@ -12,6 +12,8 @@
     "test": "hardhat test"
   },
   "dependencies": {
+    "@cowprotocol/widget-lib": "^0.20.0",
+    "@openzeppelin/contracts": "^5.3.0",
     "@privy-io/react-auth": "^2.17.3",
     "@privy-io/wagmi": "^1.0.5",
     "@rainbow-me/rainbowkit": "^2.0.8",

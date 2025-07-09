@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useTokenBalances } from '../hooks/useTokenBalances'
 import CowswapIntegration from './CowswapIntegration'
+import GaslessCowswap from './GaslessCowswap'
 import { Users, Target, Clock, Zap } from 'lucide-react'
 import { formatUnits } from 'viem'
 
@@ -46,11 +47,11 @@ export default function WalletBalance({}: WalletBalanceProps) {
     return null
   }
 
-  // Show Cowswap integration if user has chosen an amount to swap
+  // Show new Gasless Cowswap integration if user has chosen an amount to swap
   if (showCowswap && swapAmount) {
     return (
-      <div className="max-w-md mx-auto mb-6">
-        <CowswapIntegration
+      <div className="max-w-4xl mx-auto mb-6">
+        <GaslessCowswap
           usdcAmount={swapAmount}
           onSuccess={() => {
             setShowCowswap(false)
@@ -241,18 +242,27 @@ export default function WalletBalance({}: WalletBalanceProps) {
                     setShowCowswap(true)
                   }}
                   disabled={!swapAmount || parseFloat(swapAmount) <= 0 || parseFloat(swapAmount) > parseFloat(usdcBalance?.balance || '0')}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
+                  <Zap className="w-4 h-4" />
                   Convert to ETH
                 </button>
               </div>
 
-              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-blue-700">
-                  <strong>CoW Swap Integration:</strong> This will open CoW Protocol's swap interface 
-                  in a new window, where you can convert your USDC to ETH with MEV protection 
-                  and optimal pricing. After the swap, you can contribute the ETH to the campaign.
-                </p>
+              <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Zap className="w-4 h-4 text-green-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800 mb-1">⚡ Gasless Swaps Available!</p>
+                    <p className="text-xs text-green-700">
+                      <strong>No ETH needed:</strong> Our new gasless swap options let you convert USDC to ETH 
+                      without having ETH for gas fees. Fees are automatically deducted from your swap amount.
+                    </p>
+                    <p className="text-xs text-green-600 mt-1 font-medium">
+                      • Traditional swap (needs ETH) • Gasless relayer • Smart wallet options
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
