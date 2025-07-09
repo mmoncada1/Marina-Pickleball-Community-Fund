@@ -13,6 +13,7 @@ import { jbMultiTerminalAbi } from "@/lib/abis";
 import {
   ETH_ADDRESS,
   JBMULTITERMINAL_ADDRESS,
+  jbChains,
 } from "@/lib/chains";
 import { usePrimaryNativeTerminal } from "./use-primary-terminal";
 
@@ -111,6 +112,13 @@ export function usePayProject(chainId: number, projectId: bigint) {
       const memo = "";
       const metadata = "0x0" as `0x${string}`;
 
+      const currentChain = jbChains.find(chain => chain.id === chainId);
+      if (!currentChain) {
+        setStatus("error");
+        setErrorMessage(`Unsupported chain ID: ${chainId}`);
+        return;
+      }
+
       writeContract({
         address: primaryTerminal ?? JBMULTITERMINAL_ADDRESS,
         abi: jbMultiTerminalAbi,
@@ -125,6 +133,8 @@ export function usePayProject(chainId: number, projectId: bigint) {
           metadata,
         ],
         value,
+        chain: currentChain,
+        account: address,
       });
     } catch (e) {
       console.error(e);

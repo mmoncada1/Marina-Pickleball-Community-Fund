@@ -1,5 +1,3 @@
-'use client'
-
 import type { AppProps } from 'next/app'
 import '../styles/globals.css'
 import { PrivyProvider as BasePrivyProvider } from '@privy-io/react-auth'
@@ -23,7 +21,6 @@ export default function App({ Component, pageProps }: AppProps) {
         appearance: {
           theme: 'light',
           accentColor: '#676FFF',
-          logo: 'https://your-logo-url',
         },
         // For Coinbase Smart Wallet
         externalWallets: {
