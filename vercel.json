@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_PRIVY_APP_ID": "@next_public_privy_app_id",
+    "NEXT_PUBLIC_INFURA_ID": "@next_public_infura_id",
+    "NEXT_PUBLIC_CHAIN_ID": "@next_public_chain_id"
+  }
+}
