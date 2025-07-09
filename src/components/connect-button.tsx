@@ -1,16 +1,15 @@
 "use client";
 
-import { useConnect } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { useLogin } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { ComponentProps } from "react";
 import { Wallet } from "lucide-react";
 
 export function ConnectButton(props: ComponentProps<typeof Button>) {
-  const { connect } = useConnect();
+  const { login } = useLogin();
 
   return (
-    <Button onClick={() => connect({ connector: injected() })} {...props}>
+    <Button onClick={login} {...props}>
       <Wallet className="w-4 h-4 mr-2" />
       Connect Wallet
     </Button>

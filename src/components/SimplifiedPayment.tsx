@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAccount, useBalance } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 import { base } from "viem/chains";
 import { formatEther, parseEther } from "viem";
 import { usePayProject } from "@/hooks/use-pay-project";
@@ -31,6 +32,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
   const [balanceIncreased, setBalanceIncreased] = useState(false);
   
   const { address, isConnected } = useAccount();
+  const { authenticated } = usePrivy();
   const { data: balance, refetch: refetchBalance } = useBalance({ 
     chainId: CHAIN_ID, 
     address,
@@ -40,6 +42,9 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
   });
   const { payProject, status, errorMessage, reset } = usePayProject(CHAIN_ID, PROJECT_ID);
   const { fundWallet } = useFundWallet();
+
+  // Use Privy's authenticated state combined with wagmi's isConnected
+  const isWalletConnected = authenticated && isConnected;
 
   // Track balance changes
   useEffect(() => {
@@ -216,7 +221,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
           )}
 
           {/* Enhanced Balance Display */}
-          {isConnected && (
+          {isWalletConnected && (
             <div className={`rounded-lg p-3 transition-all duration-500 ${
               balanceIncreased 
                 ? "bg-green-50 border-2 border-green-200 animate-pulse" 
@@ -270,7 +275,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
           )}
 
           {/* Action Button */}
-          {!isConnected ? (
+          {!isWalletConnected ? (
             <ConnectButton className="w-full h-12 text-lg" />
           ) : !ethAmount || parseFloat(ethAmount) <= 0 ? (
             <Button disabled className="w-full h-12 text-lg">
