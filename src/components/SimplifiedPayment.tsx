@@ -43,6 +43,18 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
   const { payProject, status, errorMessage, reset } = usePayProject(CHAIN_ID, PROJECT_ID);
   const { fundWallet } = useFundWallet();
 
+  // Add debugging for fundWallet hook
+  useEffect(() => {
+    console.log('🔧 Fund Wallet Hook Debug:', {
+      fundWalletAvailable: typeof fundWallet === 'function',
+      fundWallet: fundWallet,
+      authenticated,
+      isConnected,
+      address,
+      isWalletConnected: authenticated && isConnected
+    });
+  }, [fundWallet, authenticated, isConnected, address]);
+
   // Use Privy's authenticated state combined with wagmi's isConnected
   const isWalletConnected = authenticated && isConnected;
 
@@ -116,14 +128,134 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
   };
 
   const handleOnramp = () => {
+    console.log('🚀 HandleOnramp called!');
+    
+    // Check prerequisites
+    console.log('🔧 Prerequisites Check:', {
+      address: !!address,
+      usdAmount: !!usdAmount,
+      ethAmount: !!ethAmount,
+      fundWalletFunction: typeof fundWallet,
+      authenticated,
+      isConnected,
+      isWalletConnected: authenticated && isConnected
+    });
+    
+    // Check if fundWallet function exists
+    if (typeof fundWallet !== 'function') {
+      console.error('❌ fundWallet is not a function:', fundWallet);
+      alert('Error: fundWallet function not available. Check console for details.');
+      return;
+    }
+    
     // Trigger Coinbase onramp through Privy with the specific ETH amount
-    // The amount guidance is provided in the UI instead
     if (address && usdAmount && ethAmount) {
-      setIsWaitingForFunds(true);
-      fundWallet(address, { 
-        chain: base,
-        amount: ethAmount // Pass the calculated ETH amount as string
+      console.log('🔧 Debug Info:', {
+        address,
+        usdAmount, 
+        ethAmount,
+        currentDomain: window.location.origin,
+        isHTTPS: window.location.protocol === 'https:',
+        userAgent: navigator.userAgent,
+        privyAppId: process.env.NEXT_PUBLIC_PRIVY_APP_ID ? 'Set' : 'Missing'
       });
+      
+      setIsWaitingForFunds(true);
+      
+      try {
+        console.log('🔄 Calling fundWallet with params:', {
+          address,
+          config: { chain: base, amount: ethAmount }
+        });
+        
+        const result = fundWallet(address, { 
+          chain: base,
+          amount: ethAmount // Pass the calculated ETH amount as string
+        });
+        
+        console.log('✅ FundWallet called successfully, result:', result);
+        
+        // Check if result is a promise
+        if (result && typeof result.then === 'function') {
+          console.log('🔄 FundWallet returned a promise, waiting...');
+          result
+            .then((res) => console.log('✅ FundWallet promise resolved:', res))
+            .catch((err) => {
+              console.error('❌ FundWallet promise rejected:', err);
+              setIsWaitingForFunds(false);
+            });
+        }
+        
+      } catch (error) {
+        console.error('❌ FundWallet error:', error);
+        setIsWaitingForFunds(false);
+        
+        // Show user-friendly error
+        alert(
+          `⚠️ Unable to open funding modal.\n\n` +
+          `Error: ${error.message || 'Unknown error'}\n\n` +
+          `This might be due to:\n` +
+          `• Domain not whitelisted in Privy dashboard\n` +
+          `• Third-party cookies blocked\n` +
+          `• Pop-ups blocked in browser\n\n` +
+          `Check console for technical details.`
+        );
+      }
+    } else {
+      console.error('❌ Missing required parameters:', {
+        address: !!address,
+        usdAmount: !!usdAmount,
+        ethAmount: !!ethAmount
+      });
+      alert('Missing required parameters for funding. Check console for details.');
+    }
+  };
+
+  const handleAlternativeFunding = () => {
+    // Fallback for mobile users - direct Coinbase link
+    const coinbaseUrl = `https://www.coinbase.com/price/ethereum`;
+    window.open(coinbaseUrl, '_blank');
+    
+    // Still set waiting state to help user track
+    setIsWaitingForFunds(true);
+    
+    // Show guidance
+    alert(
+      "📱 Alternative Funding:\n\n" +
+      "1. Buy ETH on Coinbase (opened in new tab)\n" +
+      "2. Send it to your wallet address:\n" +
+      `${address}\n\n` +
+      "3. Come back here when funds arrive"
+    );
+  };
+
+  // Test function to check if useFundWallet is working
+  const testFundWallet = () => {
+    console.log('🧪 Testing fundWallet function...');
+    console.log('🔧 Test Debug:', {
+      fundWalletType: typeof fundWallet,
+      address,
+      authenticated,
+      isConnected
+    });
+    
+    if (!address) {
+      alert('Please connect your wallet first');
+      return;
+    }
+    
+    if (typeof fundWallet !== 'function') {
+      alert('fundWallet is not available');
+      return;
+    }
+    
+    try {
+      console.log('🔄 Calling fundWallet without amount...');
+      const result = fundWallet(address, { chain: base });
+      console.log('✅ Test fundWallet result:', result);
+    } catch (error) {
+      console.error('❌ Test fundWallet error:', error);
+      alert(`Test failed: ${error.message}`);
     }
   };
 
@@ -291,6 +423,16 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
                 <Wallet className="w-5 h-5 mr-2" />
                 {isWaitingForFunds ? "Adding funds..." : `Add ${ethAmount} ETH ($${usdAmount})`}
               </Button>
+              
+              {/* Debug test button - remove after fixing */}
+              <Button 
+                onClick={testFundWallet}
+                variant="outline"
+                className="w-full text-sm"
+              >
+                🧪 Test Fund Wallet (Debug)
+              </Button>
+              
               <p className="text-xs text-center text-gray-500">
                 This will open Coinbase onramp with the exact amount pre-filled
               </p>
