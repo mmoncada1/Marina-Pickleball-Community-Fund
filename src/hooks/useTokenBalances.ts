@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAccount, usePublicClient, useChainId } from 'wagmi'
-import { formatUnits, createPublicClient, http } from 'viem'
+import { formatUnits, createPublicClient, http, formatEther } from 'viem'
 import { base } from 'wagmi/chains'
 
 // USDC contract address on Base (6 decimals)
@@ -31,7 +31,7 @@ export function useTokenBalances() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     if (!address || !publicClient || !isConnected) {
       setBalances([])
       return
@@ -41,19 +41,13 @@ export function useTokenBalances() {
       setLoading(true)
       setError(null)
 
-      console.log('Fetching balances for address:', address)
-      console.log('Current chain ID:', chainId)
-      console.log('Base chain ID:', base.id)
-
       // Fetch ETH balance from current chain
       const ethBalance = await publicClient.getBalance({ address })
-      console.log('ETH balance (raw):', ethBalance.toString())
       
       // Fetch USDC balance from Base (always use Base client for USDC)
       let usdcBalance = BigInt(0)
       
       try {
-        console.log('Fetching USDC balance from Base using dedicated client...')
         const usdcResult = await baseClient.readContract({
           address: USDC_ADDRESS as `0x${string}`,
           abi: [
@@ -69,7 +63,6 @@ export function useTokenBalances() {
           args: [address],
         })
         usdcBalance = usdcResult as bigint
-        console.log('USDC balance (raw):', usdcBalance.toString())
       } catch (usdcError) {
         console.error('Failed to fetch USDC balance from Base:', usdcError)
       }
@@ -78,9 +71,6 @@ export function useTokenBalances() {
       const ethFormatted = formatUnits(ethBalance, 18)
       const usdcFormatted = formatUnits(usdcBalance, 6)
       
-      console.log('ETH formatted:', ethFormatted)
-      console.log('USDC formatted:', usdcFormatted)
-
       const newBalances: TokenBalance[] = [
         {
           symbol: 'ETH',
@@ -96,18 +86,33 @@ export function useTokenBalances() {
       ]
 
       setBalances(newBalances)
-      console.log('Updated balances:', newBalances)
+      return newBalances;
     } catch (err) {
       console.error('Error fetching balances:', err)
       setError('Failed to fetch balances')
+      const errorBalances: TokenBalance[] = [
+        {
+          symbol: 'ETH',
+          balance: "0.0000",
+          decimals: 18,
+        },
+        {
+          symbol: 'USDC',
+          balance: "0.00",
+          decimals: 6,
+          address: USDC_ADDRESS,
+        },
+      ]
+      setBalances(errorBalances);
+      return errorBalances;
     } finally {
       setLoading(false)
     }
-  }
+  }, [address, isConnected, publicClient, chainId])
 
   useEffect(() => {
     fetchBalances()
-  }, [address, isConnected, publicClient, chainId])
+  }, [address, isConnected, publicClient, chainId, fetchBalances])
 
   return {
     balances,

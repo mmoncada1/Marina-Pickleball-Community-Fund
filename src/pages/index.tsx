@@ -47,7 +47,6 @@ function useJuiceboxProject(projectId: number) {
         })
         
       } catch (error) {
-        console.error('Error fetching Juicebox data:', error)
         // Fall back to manual data
         setData({
           totalRaised: 143,

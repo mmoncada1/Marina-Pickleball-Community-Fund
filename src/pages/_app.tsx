@@ -12,17 +12,29 @@ const queryClient = new QueryClient();
 export default function App({ Component, pageProps }: AppProps) {
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
   
-  // Debug production configuration
-  console.log('🔧 Privy Config Debug:', {
-    appId: privyAppId ? 'Set' : 'Missing',
-    domain: typeof window !== 'undefined' ? window.location.origin : 'SSR',
-    isHTTPS: typeof window !== 'undefined' ? window.location.protocol === 'https:' : 'Unknown',
-    nodeEnv: process.env.NODE_ENV
-  });
-  
+  // Configure Privy
+  const config = {
+    appId: privyAppId,
+    appearance: {
+      theme: 'light' as const,
+      accentColor: '#059669', // Emerald-600
+      logo: 'https://your-logo-url.com/logo.png',
+    },
+    walletConnectCloudProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+    supportedChains: [base],
+    embeddedWallets: {
+      createOnLogin: 'users-without-wallets'
+    },
+    fiatOnRamp: {
+      useSandbox: process.env.NODE_ENV === 'development',
+    },
+  };
+
+  // Debug log removed
+
   if (!privyAppId) {
     console.error('NEXT_PUBLIC_PRIVY_APP_ID is not defined in environment variables');
-    return <div>Configuration Error: Missing Privy App ID</div>;
+    return <div>Error: Missing Privy configuration</div>;
   }
 
   return (

@@ -21,7 +21,6 @@ export default async function handler(
 
     res.status(200).json(result)
   } catch (error) {
-    console.error('Error fetching Juicebox data:', error)
     res.status(500).json({ 
       error: 'Failed to fetch project data',
       message: error.message,

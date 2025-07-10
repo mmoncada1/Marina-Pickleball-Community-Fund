@@ -29,14 +29,10 @@ export interface OrderStatus {
  */
 export async function checkTransactionStatus(txHash: string): Promise<TransactionStatus> {
   try {
-    console.log('🔍 Checking transaction status for:', txHash)
-    
     // Get transaction receipt
     const receipt = await baseClient.getTransactionReceipt({ hash: txHash as `0x${string}` })
     
     if (receipt) {
-      console.log('✅ Transaction found on Base network')
-      
       return {
         exists: true,
         confirmed: true, // Assume confirmed if receipt exists
@@ -46,7 +42,6 @@ export async function checkTransactionStatus(txHash: string): Promise<Transactio
         effectiveGasPrice: receipt.effectiveGasPrice
       }
     } else {
-      console.log('⏳ Transaction not yet confirmed')
       return {
         exists: false,
         confirmed: false,
@@ -79,8 +74,6 @@ export async function checkTransactionStatus(txHash: string): Promise<Transactio
  */
 export async function checkOrderStatus(orderUid: string): Promise<OrderStatus> {
   try {
-    console.log('🔍 Checking CoW Protocol order status for:', orderUid)
-    
     // Call the CoW Protocol API to get real order status
     const response = await fetch(`/api/cow-order-status?orderUid=${orderUid}`)
     
@@ -89,7 +82,6 @@ export async function checkOrderStatus(orderUid: string): Promise<OrderStatus> {
     }
     
     const data = await response.json()
-    console.log('CoW Protocol order status:', data)
     
     if (data.success) {
       return {
@@ -146,8 +138,6 @@ export class TransactionMonitor {
   ) {}
   
   start(): void {
-    console.log('🚀 Starting transaction monitor for:', this.txHash)
-    
     let attempts = 0
     
     this.intervalId = setInterval(async () => {
@@ -204,8 +194,6 @@ export class OrderMonitor {
   ) {}
   
   start(): void {
-    console.log('🚀 Starting order monitor for:', this.orderUid)
-    
     let attempts = 0
     
     this.intervalId = setInterval(async () => {

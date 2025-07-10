@@ -137,13 +137,9 @@ export function usePayProject(chainId: number, projectId: bigint) {
         account: address,
       });
     } catch (e) {
-      console.error(e);
       setStatus("error");
-      setErrorMessage(
-        e instanceof Error
-          ? e.message
-          : (e as any).shortMessage || "Unknown error"
-      );
+      const errorMessage = e instanceof Error ? e.message : "Payment failed";
+      setErrorMessage(errorMessage);
     }
   };
 

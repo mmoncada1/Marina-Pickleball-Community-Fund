@@ -38,11 +38,6 @@ export default function AccountFunding({ onSuccess, onCancel }: AccountFundingPr
       setIsFunding(true)
       setError(null)
 
-      console.log('🚀 Starting card funding for ETH on Base...')
-      console.log('User Address:', address)
-      console.log('Funding Amount:', fundingAmount, 'ETH')
-      console.log('Current Chain:', chain?.name, 'ID:', chain?.id)
-
       // Use Privy's fundWallet hook - it handles cross-chain funding internally
       // Funds will be delivered to Base even if funding process uses mainnet
       await fundWallet(address, {
@@ -54,15 +49,12 @@ export default function AccountFunding({ onSuccess, onCancel }: AccountFundingPr
         }
       })
 
-      console.log('✅ Funding successful!')
       setSuccess(true)
       setTimeout(() => {
         if (onSuccess) onSuccess()
       }, 2000)
 
     } catch (error) {
-      console.error('❌ Funding error:', error)
-      
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message.includes('User rejected')) {
         setError('Funding was cancelled')

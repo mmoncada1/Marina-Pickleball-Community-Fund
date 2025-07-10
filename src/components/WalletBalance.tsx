@@ -30,7 +30,7 @@ export default function WalletBalance({}: WalletBalanceProps) {
         setAddressCopied(true)
         setTimeout(() => setAddressCopied(false), 2000)
       } catch (err) {
-        console.error('Failed to copy address:', err)
+        // Debug log removed
       }
     }
   }

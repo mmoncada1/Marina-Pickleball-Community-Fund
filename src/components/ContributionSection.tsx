@@ -109,7 +109,6 @@ export default function ContributionSection({
       })
       
     } catch (error) {
-      console.error('Contribution failed:', error)
       alert('Contribution failed. Please try again.')
     } finally {
       setIsContributing(false)
