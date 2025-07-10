@@ -25,6 +25,7 @@ export default function AccountFunding({ onSuccess, onCancel }: AccountFundingPr
 
   const presetAmounts = ['0.01', '0.05', '0.1', '0.25', '0.5', '1.0']
 
+  
   // Get the user's embedded wallet
   const embeddedWallet = wallets.find(wallet => wallet.walletClientType === 'privy')
 
