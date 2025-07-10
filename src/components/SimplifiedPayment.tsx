@@ -30,6 +30,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
   const [isWaitingForFunds, setIsWaitingForFunds] = useState(false);
   const [previousBalance, setPreviousBalance] = useState<bigint | null>(null);
   const [balanceIncreased, setBalanceIncreased] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   
   const { address, isConnected } = useAccount();
   const { authenticated } = usePrivy();
@@ -349,6 +350,26 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
             </div>
           )}
 
+          {/* Disclaimer Checkbox - only show when user can contribute */}
+          {isWalletConnected && ethAmount && parseFloat(ethAmount) > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <label className="flex items-start space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={disclaimerAccepted}
+                  onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                />
+                <div className="text-sm text-amber-800">
+                  <p className="font-medium mb-1">🥒 PICKLES Token Disclaimer</p>
+                  <p className="leading-relaxed">
+                    I acknowledge that any PICKLES tokens received are purely for fun and commemoration of my support for the Marina pickleball community. I have <strong>zero expectation of profit</strong> or financial return. These tokens are purely commemorative and have no monetary value.
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+
           {/* Action Button */}
           {!isWalletConnected ? (
             <ConnectButton className="w-full h-12 text-lg" />
@@ -360,7 +381,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
             <div className="space-y-2">
               <Button 
                 onClick={handleOnramp}
-                disabled={isWaitingForFunds}
+                disabled={isWaitingForFunds || !disclaimerAccepted}
                 className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700"
               >
                 <Wallet className="w-5 h-5 mr-2" />
@@ -376,7 +397,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
           ) : (
             <Button 
               onClick={handleContribute}
-              disabled={isProcessing || status === 'pending' || status === 'confirming'}
+              disabled={isProcessing || status === 'pending' || status === 'confirming' || !disclaimerAccepted}
               className="w-full h-12 text-lg bg-green-600 hover:bg-green-700"
             >
               {isProcessing || status === 'pending' || status === 'confirming' ? (
