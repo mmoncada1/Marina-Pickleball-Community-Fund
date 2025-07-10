@@ -47,17 +47,28 @@ export default function WalletButton() {
             {user?.email?.address || formatAddress(address)}
           </span>
           {address && (
-            <button
-              onClick={copyAddress}
-              className="ml-1 p-1 hover:bg-green-100 rounded transition-colors"
-              title="Copy address"
-            >
-              {copied ? (
-                <Trophy className="w-3 h-3 text-green-600" />
-              ) : (
-                <Target className="w-3 h-3 text-green-600" />
-              )}
-            </button>
+            <>
+              <button
+                onClick={copyAddress}
+                className="ml-1 p-1 hover:bg-green-100 rounded transition-colors"
+                title="Copy address"
+              >
+                {copied ? (
+                  <Trophy className="w-3 h-3 text-green-600" />
+                ) : (
+                  <Target className="w-3 h-3 text-green-600" />
+                )}
+              </button>
+              <a
+                href={`https://basescan.org/address/${address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-1 p-1 hover:bg-green-100 rounded transition-colors"
+                title="View on BaseScan"
+              >
+                <span className="text-xs">🔗</span>
+              </a>
+            </>
           )}
         </div>
         <button

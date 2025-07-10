@@ -131,6 +131,11 @@ export default function Home() {
               fundingGoal={fundingGoal}
             />
 
+            {/* Wallet Balance Component */}
+            <div className="mt-8 max-w-md mx-auto">
+              <WalletBalance />
+            </div>
+
             {/* Legacy Components (kept for reference) */}
             {false && (
               <>

@@ -9,7 +9,10 @@ import { base } from 'wagmi/chains'
 // Official USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
 const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 
-// Create a dedicated Base client for USDC queries
+// PICKLES token contract address on Base (18 decimals)
+const PICKLES_ADDRESS = '0x20b8c2e1c80f62de98b74b42cefeef2368ea9fe4'
+
+// Create a dedicated Base client for token queries
 const baseClient = createPublicClient({
   chain: base,
   transport: http()
@@ -67,9 +70,33 @@ export function useTokenBalances() {
         console.error('Failed to fetch USDC balance from Base:', usdcError)
       }
 
+      // Fetch PICKLES balance from Base
+      let picklesBalance = BigInt(0)
+      
+      try {
+        const picklesResult = await baseClient.readContract({
+          address: PICKLES_ADDRESS as `0x${string}`,
+          abi: [
+            {
+              name: 'balanceOf',
+              type: 'function',
+              stateMutability: 'view',
+              inputs: [{ name: 'account', type: 'address' }],
+              outputs: [{ name: '', type: 'uint256' }],
+            },
+          ] as const,
+          functionName: 'balanceOf',
+          args: [address],
+        })
+        picklesBalance = picklesResult as bigint
+      } catch (picklesError) {
+        console.error('Failed to fetch PICKLES balance from Base:', picklesError)
+      }
+
       // Format balances
       const ethFormatted = formatUnits(ethBalance, 18)
       const usdcFormatted = formatUnits(usdcBalance, 6)
+      const picklesFormatted = formatUnits(picklesBalance, 18)
       
       const newBalances: TokenBalance[] = [
         {
@@ -82,6 +109,12 @@ export function useTokenBalances() {
           balance: usdcFormatted,
           decimals: 6,
           address: USDC_ADDRESS,
+        },
+        {
+          symbol: 'PKLS',
+          balance: picklesFormatted,
+          decimals: 18,
+          address: PICKLES_ADDRESS,
         },
       ]
 
@@ -101,6 +134,12 @@ export function useTokenBalances() {
           balance: "0.00",
           decimals: 6,
           address: USDC_ADDRESS,
+        },
+        {
+          symbol: 'PKLS',
+          balance: "0.0000",
+          decimals: 18,
+          address: PICKLES_ADDRESS,
         },
       ]
       setBalances(errorBalances);

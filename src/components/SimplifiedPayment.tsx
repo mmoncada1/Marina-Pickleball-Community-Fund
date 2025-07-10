@@ -287,7 +287,7 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className={`text-sm ${balanceIncreased ? "text-green-700" : "text-blue-700"}`}>
-                    Your ETH Balance:
+                    Balance:
                   </span>
                   {balanceIncreased && (
                     <TrendingUp className="w-4 h-4 text-green-600 animate-bounce" />
@@ -305,6 +305,24 @@ export function SimplifiedPayment({ totalRaised, fundingGoal }: Props) {
               {balance && ethPrice && (
                 <div className="text-xs text-gray-500 mt-1">
                   ≈ ${(Number(formatEther(balance.value)) * ethPrice).toFixed(2)} USD
+                </div>
+              )}
+              {address && (
+                <div className="mt-2 pt-2 border-t border-gray-200 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-600">
+                      {address.slice(0, 6)}...{address.slice(-4)}
+                    </span>
+                  </div>
+                  <a
+                    href={`https://basescan.org/address/${address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1 rounded transition-colors"
+                    title="View on BaseScan"
+                  >
+                    View on BaseScan →
+                  </a>
                 </div>
               )}
             </div>

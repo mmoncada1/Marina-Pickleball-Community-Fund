@@ -14,8 +14,8 @@ export default function WalletBalance({}: WalletBalanceProps) {
   const { balances, loading, error, refetch } = useTokenBalances()
   const [addressCopied, setAddressCopied] = useState(false)
 
-  const usdcBalance = balances.find(b => b.symbol === 'USDC')
   const ethBalance = balances.find(b => b.symbol === 'ETH')
+  const picklesBalance = balances.find(b => b.symbol === 'PKLS')
 
   // Helper function to format address
   const formatAddress = (addr: string) => {
@@ -111,8 +111,7 @@ export default function WalletBalance({}: WalletBalanceProps) {
           {/* ETH Balance */}
           <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full"></div>
-              <span className="font-medium text-gray-900">ETH</span>
+              <span className="font-medium text-gray-900">Ξ ETH</span>
               <span className="text-xs text-gray-500">(Base)</span>
             </div>
             <div className="text-right">
@@ -125,19 +124,29 @@ export default function WalletBalance({}: WalletBalanceProps) {
             </div>
           </div>
 
-          {/* USDC Balance */}
+
+
+          {/* PICKLES Balance */}
           <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-green-500 rounded-full"></div>
-              <span className="font-medium text-gray-900">USDC</span>
+              <span className="font-medium text-gray-900">🥒 PKLS</span>
               <span className="text-xs text-gray-500">(Base)</span>
             </div>
             <div className="text-right">
               <span className="font-semibold text-gray-900">
-                ${parseFloat(usdcBalance?.balance || '0').toFixed(2)}
+                {parseFloat(picklesBalance?.balance || '0').toFixed(4)} PKLS
               </span>
               <div className="text-xs text-gray-500">
-                {parseFloat(usdcBalance?.balance || '0').toFixed(6)} USDC
+                {picklesBalance?.address && (
+                  <a
+                    href={`https://basescan.org/token/${picklesBalance.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    View Token →
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -147,7 +156,7 @@ export default function WalletBalance({}: WalletBalanceProps) {
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-700">Total Portfolio Value</span>
               <span className="text-lg font-bold text-gray-900">
-                ${((parseFloat(ethBalance?.balance || '0') * 3400) + parseFloat(usdcBalance?.balance || '0')).toFixed(2)}
+                ${(parseFloat(ethBalance?.balance || '0') * 3400).toFixed(2)}
               </span>
             </div>
           </div>

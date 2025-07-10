@@ -169,8 +169,19 @@ export default function AccountFunding({ onSuccess, onCancel }: AccountFundingPr
             </div>
           </div>
         </div>
-        <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
-          💡 All purchased ETH will be delivered to your wallet on Base network
+        <div className="mt-3 flex justify-between items-center">
+          <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800 flex-1">
+            💡 All purchased ETH will be delivered to your wallet on Base network
+          </div>
+          <a
+            href={`https://basescan.org/address/${address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1 rounded transition-colors"
+            title="View on BaseScan"
+          >
+            View on BaseScan →
+          </a>
         </div>
       </div>
 
